@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: rollikey-postgres
+    environment:
+      POSTGRES_USER: rollikey
+      POSTGRES_PASSWORD: rollikey_dev_password
+      POSTGRES_DB: rollikey_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: rollikey-redis
+    ports:
+      - "6379:6379"
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: rollikey-mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  # Local S3-compatible sandbox (real MinIO server) for the Rollikey S3 connector.
+  # Console: http://localhost:9001. NOTE: upstream minio/minio is no longer published
+  # on Docker Hub or Quay, so this uses the frozen bitnamilegacy mirror of MinIO.
+  minio:
+    image: bitnamilegacy/minio:latest
+    container_name: rollikey-minio
+    environment:
+      MINIO_ROOT_USER: rollikey_minio
+      MINIO_ROOT_PASSWORD: rollikey_minio_password
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - rollikey-minio-data:/bitnami/minio/data
+
+volumes:
+  pgdata:
+  rollikey-minio-data:

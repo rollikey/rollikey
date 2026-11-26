@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rollikey Dashboard</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+:root{
+  --bg:#f6f7f9;--panel:#fff;--panel2:#f0f2f5;--text:#14181f;--muted:#5d6675;--line:#dfe3ea;
+  --accent:#2457ff;--ok:#127a43;--okbg:#e2f5ea;--warn:#8a5a00;--warnbg:#fff1d6;--bad:#b3261e;--badbg:#fde7e5;--info:#2457ff;--infobg:#e6edff;
+  --code:#f3f5f8;--shadow:0 1px 2px rgba(20,24,31,.06);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0e1116;--panel:#161b22;--panel2:#1d232c;--text:#e8ecf2;--muted:#8d97a7;--line:#2a313c;
+  --accent:#6f93ff;--ok:#4cc38a;--okbg:#10291d;--warn:#e0b04a;--warnbg:#2c2410;--bad:#ff7b72;--badbg:#341716;--info:#7da0ff;--infobg:#17213d;
+  --code:#0f141a;--shadow:none;}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+code,pre,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
+header{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;padding:12px 20px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+h1{font-size:16px;margin:0;letter-spacing:.2px}
+h1 span{color:var(--muted);font-weight:400}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border-radius:999px;font-size:12px;background:var(--panel2);border:1px solid var(--line)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.pill.ok .dot{background:var(--ok)}.pill.bad .dot{background:var(--bad)}
+.spacer{flex:1}
+main{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:16px;padding:16px 20px;max-width:1500px;margin:0 auto}
+@media (max-width:900px){main{grid-template-columns:1fr;padding:12px 16px}}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+section.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);min-width:0}
+.card>.hd{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.card>.bd{padding:12px 14px}
+button,select{font:inherit;border-radius:7px;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:5px 11px;cursor:pointer}
+button:hover:not(:disabled){border-color:var(--accent)}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+button.danger{background:var(--bad);border-color:var(--bad);color:#fff;font-weight:600}
+button.small{padding:3px 8px;font-size:12px}
+.badge{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
+.b-ok{background:var(--okbg);color:var(--ok)}.b-warn{background:var(--warnbg);color:var(--warn)}.b-bad{background:var(--badbg);color:var(--bad)}.b-info{background:var(--infobg);color:var(--info)}.b-mute{background:var(--panel2);color:var(--muted)}
+.runs{max-height:60vh;overflow:auto}
+.run{padding:9px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+.run:hover{background:var(--panel2)}.run.sel{background:var(--infobg)}
+.run .top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.run .id{font-family:ui-monospace,Menlo,monospace;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.run .meta{color:var(--muted);font-size:12px;margin-top:3px}
+.empty{color:var(--muted);padding:18px 14px;text-align:center}
+.air{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:10px;background:var(--panel2)}
+.air.held{border-color:var(--warn)}
+.air .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.air .subj{font-weight:600;overflow-wrap:anywhere}
+.count{font:700 22px/1 ui-monospace,Menlo,monospace;color:var(--warn);min-width:64px;text-align:right}
+.bar{height:4px;background:var(--line);border-radius:2px;margin:8px 0;overflow:hidden}.bar>i{display:block;height:100%;background:var(--warn);transition:width .4s linear}
+.timeline{list-style:none;margin:0;padding:0}
+.step{border:1px solid var(--line);border-radius:8px;margin-bottom:10px;overflow:hidden}
+.step>.sh{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:9px 12px;background:var(--panel2)}
+.step .kind{font-weight:700}.step .tgt{color:var(--muted);overflow-wrap:anywhere}
+.step .sb{padding:9px 12px;display:grid;gap:6px}
+.kv{color:var(--muted);font-size:12px}
+details{margin-top:2px}summary{cursor:pointer;color:var(--accent);font-size:12px;user-select:none}
+pre{background:var(--code);border:1px solid var(--line);border-radius:6px;padding:8px 10px;overflow:auto;max-height:280px;margin:6px 0 0;white-space:pre-wrap;word-break:break-word}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.log{background:var(--code);border-radius:6px;padding:8px 10px;max-height:240px;overflow:auto;font:12px/1.5 ui-monospace,Menlo,monospace}
+.log .ok{color:var(--ok)}.log .error{color:var(--bad)}.log .warn{color:var(--warn)}.log .info{color:var(--text)}
+.log time{color:var(--muted);margin-right:8px}
+.shadow{border:1px dashed var(--accent);border-radius:8px;padding:10px 12px;margin-top:12px;background:var(--infobg)}
+.diff{font-family:ui-monospace,Menlo,monospace;font-size:12px}.diff .from{color:var(--bad);text-decoration:line-through}.diff .to{color:var(--ok)}
+.toast{position:fixed;right:16px;bottom:16px;max-width:420px;padding:10px 14px;border-radius:8px;background:var(--text);color:var(--bg);box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:20}
+a{color:var(--accent)}
+a.pilot{font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:6px;padding:5px 9px}a.pilot:hover{color:var(--text);border-color:var(--accent)}
+header img{display:block}
+</style>
+</head>
+<body>
+<header>
+  <img src="/rollikey-logo.svg" alt="Rollikey" width="30" height="30" style="border-radius:7px">
+  <h1>Rollikey <span>· Visual Trace &amp; Airlock</span></h1>
+  <a href="/demo" style="font-weight:600">Side-by-side disaster demo →</a>
+  <div class="pills" id="health"></div>
+  <div class="spacer"></div>
+  <label class="kv" for="mode">Agent</label>
+  <select id="mode"><option value="gemini">Gemini agent (live LLM)</option><option value="scripted">Scripted agent (no LLM)</option></select>
+  <button class="primary" id="drillBtn">▶ Run Chaos Drill</button>
+  <a class="pilot" href="{{PILOT_URL}}" target="_blank" rel="noopener">Hosted pilot for startups →</a>
+  <button class="primary" id="fiveBtn" title="Postgres + Stripe + S3 + GitHub + Slack/Email, crash on step 6, LIFO revert of all 5">▶ Run 5-Tool Chaos Drill</button>
+</header>
+
+<main>
+  <div class="col">
+    <section class="card">
+      <div class="hd"><h2>Agent runs</h2><span class="spacer"></span><span class="kv" id="runCount"></span></div>
+      <div class="runs" id="runs"><div class="empty">Loading…</div></div>
+    </section>
+    <section class="card">
+      <div class="hd"><h2>Chaos drill</h2><span class="spacer"></span><span id="drillBadge"></span></div>
+      <div class="bd"><div class="log" id="drillLog"><span class="kv">No drill yet. Press “Run Chaos Drill”.</span></div></div>
+    </section>
+  </div>
+
+  <div class="col">
+    <section class="card">
+      <div class="hd"><h2>60-second staging airlock</h2><span class="spacer"></span><span class="kv" id="airMeta"></span></div>
+      <div class="bd" id="airlock"><div class="empty">Loading…</div></div>
+    </section>
+    <section class="card">
+      <div class="hd"><h2>Sandbox state</h2><span class="spacer"></span><span class="kv">MinIO · GitHub sandbox · Slack inbox</span></div>
+      <div class="bd" id="sandbox"><div class="empty">Loading…</div></div>
+    </section>
+    <section class="card">
+      <div class="hd"><h2 id="detailTitle">Run trace</h2>
+        <div class="actions" id="detailActions"></div></div>
+      <div class="bd" id="detail"><div class="empty">Select a run to see its tool-call trace.</div></div>
+    </section>
+  </div>
+</main>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const j = (v) => esc(JSON.stringify(v, null, 2));
+const money = (c) => c == null ? '' : '$' + (c / 100).toLocaleString('en-US', {minimumFractionDigits: 2});
+const state = { runId: null, skew: 0, detail: null, shadow: null, openDetails: new Set(), health: null };
+
+async function api(path, opts = {}) {
+  const res = await fetch(path, { ...opts, headers: { 'content-type': 'application/json', 'x-rollikey-ui': '1' } });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || res.statusText);
+  return body;
+}
+let toastTimer;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, 4500); }
+const serverNow = () => Date.now() + state.skew;
+const statusBadge = (s) => ({ active:'b-warn', failed:'b-bad', reverted:'b-info', blocked:'b-bad', completed:'b-ok', applied:'b-ok', held:'b-warn', released:'b-ok', cancelled:'b-mute', pending:'b-warn', revert_failed:'b-bad', releasing:'b-warn' }[s] || 'b-mute');
+const ago = (iso) => { const s = Math.max(0, (serverNow() - new Date(iso)) / 1000); return s < 90 ? Math.round(s) + 's ago' : s < 5400 ? Math.round(s/60) + 'm ago' : new Date(iso).toLocaleString(); };
+
+// ---------- health ----------
+async function loadHealth() {
+  try {
+    const h = await api('/api/health'); state.health = h;
+    const p = (name, x, extra='') => `<span class="pill ${x.ok ? 'ok':'bad'}" title="${esc(x.detail||'')}"><i class="dot"></i>${name}${extra}</span>`;
+    $('#health').innerHTML = p('PostgreSQL', h.postgres) + p('Redis', h.redis) +
+      p('Mailpit', h.mailpit, h.mailpit.ok ? ` · <a href="${esc(h.mailpitUrl)}" target="_blank" rel="noopener">open</a>` : '') +
+      p('Stripe', h.stripe, h.stripe.ok ? ' (test)' : '') +
+      p('S3', h.minio, h.minio.ok ? ' (MinIO)' : '') +
+      `<span class="pill ok"><i class="dot"></i>GitHub (${esc(h.github.mode)})</span>` +
+      `<span class="pill ok"><i class="dot"></i>Slack (${h.slack.backend === 'sink' ? 'local sink' : esc(h.slack.backend)})</span>` +
+      `<span class="pill">Gate: ≤${h.gate.maxRows} rows · ≤${money(h.gate.maxAmountCents)} · bulk ≤${h.gate.maxBulkItems ?? 10}</span>`;
+    $('#fiveBtn').dataset.avail = h.fiveToolAvailable ? '1' : '';
+    const mode = $('#mode');
+    mode.querySelector('[value=gemini]').disabled = !h.geminiAvailable;
+    if (!h.geminiAvailable && mode.value === 'gemini') mode.value = 'scripted';
+    mode.querySelector('[value=scripted]').disabled = !h.scriptedAvailable;
+  } catch (e) { $('#health').innerHTML = `<span class="pill bad"><i class="dot"></i>Dashboard API unreachable</span>`; }
+}
+
+// ---------- runs ----------
+async function loadRuns() {
+  const { runs, now } = await api('/api/runs');
+  state.skew = new Date(now) - Date.now();
+  const sig = state.runId + JSON.stringify(runs.map((r) => [r.run_id, r.status, r.steps, r.held, r.reverted, r.last_at]));
+  if (sig === state.runsSig) return; state.runsSig = sig;
+  $('#runCount').textContent = runs.length + ' runs';
+  $('#runs').innerHTML = runs.length ? runs.map((r) => `
+    <div class="run ${r.run_id === state.runId ? 'sel':''}" data-run="${esc(r.run_id)}">
+      <div class="top"><span class="id" title="${esc(r.run_id)}">${esc(r.run_id)}</span><span class="badge ${statusBadge(r.status)}">${esc(r.status)}</span></div>
+      <div class="meta">${r.steps} tool call${r.steps===1?'':'s'} · ${r.emails} email${r.emails===1?'':'s'}${r.held ? ` · <b style="color:var(--warn)">${r.held} held</b>`:''}${r.blocked ? ` · ${r.blocked} blocked`:''}${r.reverted ? ` · ${r.reverted} reverted`:''} · ${ago(r.last_at || r.started_at)}${r.isDrill ? ' · drill':''}</div>
+    </div>`).join('') : '<div class="empty">No runs yet. Try “Run Chaos Drill”.</div>';
+}
+$('#runs').addEventListener('click', (e) => { const el = e.target.closest('[data-run]'); if (el) selectRun(el.dataset.run); });
+
+// ---------- airlock ----------
+let airEmails = [];
+async function loadAirlock() {
+  const a = await api('/api/airlock');
+  state.skew = new Date(a.now) - Date.now();
+  const sig = JSON.stringify(a.emails); const changed = sig !== state.airSig; state.airSig = sig;
+  airEmails = a.emails;
+  if (!changed) return;
+  $('#airMeta').textContent = `hold ${a.holdSeconds}s · email + Slack · Redis TTL + durable release_at`;
+  renderAirlock(a.holdSeconds);
+}
+function renderAirlock(hold) {
+  const held = airEmails.filter((e) => e.status === 'held' || e.status === 'releasing');
+  const recent = airEmails.filter((e) => !(e.status === 'held' || e.status === 'releasing')).slice(0, 5);
+  const card = (e) => {
+    const isHeld = e.status === 'held';
+    return `<div class="air ${isHeld ? 'held':''}" data-email="${esc(e.id)}">
+      <div class="row"><span class="badge ${statusBadge(e.status)}">${esc(e.status)}</span><span class="badge b-info">${e.channel === 'slack' ? '💬 Slack' : '✉️ Email'}</span>
+        <span class="subj">${esc(e.subject)}</span><span class="spacer"></span>
+        ${isHeld ? `<span class="count" data-count="${esc(e.releaseAt)}">--</span>` : ''}</div>
+      <div class="kv">${e.channel === 'slack' ? 'channel' : 'to'} ${esc(e.to.join(', '))} · run <a href="#" data-run="${esc(e.runId)}">${esc(e.runId)}</a></div>
+      ${isHeld ? `<div class="bar"><i data-bar="${esc(e.releaseAt)}" data-created="${esc(e.createdAt)}"></i></div>
+      <div class="row"><button class="small" data-release="${esc(e.id)}">Release Early</button>
+        <button class="small danger" data-kill="${esc(e.runId)}">Kill Switch / Revert Run</button></div>` : ''}
+      ${e.body ? `<details data-key="air-${esc(e.id)}"><summary>${e.channel === 'slack' ? 'Why airlocked' : 'Message body'}</summary><pre>${esc(e.body)}</pre></details>` : ''}
+      ${e.error ? `<div class="kv" style="color:var(--bad)">${esc(e.error)}</div>`:''}
+    </div>`;
+  };
+  $('#airlock').innerHTML = held.length || recent.length
+    ? (held.length ? held.map(card).join('') : '<div class="empty" style="padding:6px">Airlock empty: no outbound email or Slack is being held.</div>') +
+      (recent.length ? `<div class="kv" style="margin:8px 0 6px">Recently resolved</div>` + recent.map(card).join('') : '')
+    : '<div class="empty">Airlock empty: no outbound email or Slack is being held.</div>';
+  tick();
+}
+function tick() {
+  document.querySelectorAll('[data-count]').forEach((el) => {
+    const left = Math.max(0, (new Date(el.dataset.count) - serverNow()) / 1000);
+    el.textContent = Math.ceil(left) + 's';
+  });
+  document.querySelectorAll('[data-bar]').forEach((el) => {
+    const end = new Date(el.dataset.bar), start = new Date(el.dataset.created);
+    el.style.width = Math.min(100, Math.max(0, (serverNow() - start) / (end - start) * 100)) + '%';
+  });
+}
+setInterval(tick, 250);
+$('#airlock').addEventListener('click', async (e) => {
+  const run = e.target.closest('a[data-run]'); if (run) { e.preventDefault(); return selectRun(run.dataset.run); }
+  const rel = e.target.closest('[data-release]'), kill = e.target.closest('[data-kill]');
+  if (rel) {
+    rel.disabled = true;
+    try { await api(`/api/airlock/${rel.dataset.release}/release`, { method: 'POST' }); toast('Released from the airlock.'); }
+    catch (err) { toast('Release failed: ' + err.message); }
+    refresh();
+  } else if (kill) await revertRun(kill.dataset.kill, kill);
+});
+
+// ---------- sandbox state ----------
+async function loadSandbox() {
+  const sb = await api('/api/sandbox');
+  const sig = JSON.stringify(sb); if (sig === state.sbSig) return; state.sbSig = sig;
+  const col = (title, inner) => `<div style="min-width:0"><div class="kv" style="font-weight:700;margin-bottom:4px">${title}</div>${inner}</div>`;
+  const li = (t, extra='') => `<div class="mono" style="overflow-wrap:anywhere;${extra}">${t}</div>`;
+  $('#sandbox').innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px">` +
+    col(`🪣 s3://${esc(sb.s3.bucket)} (latest)`, sb.s3.objects.length ? sb.s3.objects.map((o) => li(`${esc(o.key)} <span class="kv">${o.size} B</span>`)).join('') : '<div class="kv">empty</div>') +
+    col(`🐙 ${esc(sb.github.repo)} (${sb.github.live ? 'LIVE' : 'sandbox'})`, sb.github.branches.map((b) => li(`${esc(b.name)}${b.protected ? ' 🔒' : ''} <span class="kv">${esc(b.sha.slice(0,7))}</span>`)).join('') + sb.github.changedItems.map((i) => li(`#${i.number} ${esc(i.state)} · ${esc(i.title)}`, 'color:var(--warn)')).join('')) +
+    col(`💬 Slack inbox (${esc(sb.slack.backend === 'sink' ? 'local sink' : sb.slack.backend)})`, sb.slack.inbox.length ? sb.slack.inbox.map((m) => li(`<span style="${m.deleted ? 'text-decoration:line-through;opacity:.6' : ''}">#${esc(m.channel)}: ${esc(m.text)}</span>`)).join('') : '<div class="kv">no messages</div>') + `</div>`;
+}
+
+// ---------- run detail ----------
+async function selectRun(id) { state.runId = id; state.shadow = null; state.detailSig = null; await Promise.all([loadRuns(), loadDetail()]); }
+async function loadDetail() {
+  if (!state.runId) return;
+  try {
+    const d = await api('/api/runs/' + encodeURIComponent(state.runId)); const sig = d.runId + JSON.stringify({ ...d, now: 0 });
+    state.detail = d; if (sig !== state.detailSig) { state.detailSig = sig; renderDetail(); }
+  }
+  catch (e) { state.detailSig = null; $('#detail').innerHTML = `<div class="empty">${/not found/.test(e.message) ? 'Waiting for the first tool call of this run…' : esc(e.message)}</div>`; }
+}
+const KIND = { postgres: ['🐘 PostgreSQL', 'b-info'], stripe: ['💳 Stripe', 'b-info'], s3: ['🪣 AWS S3', 'b-info'], github: ['🐙 GitHub', 'b-info'], slack: ['💬 Slack', 'b-info'], email: ['✉️ Email', 'b-info'] };
+function renderDetail() {
+  const d = state.detail; if (!d) return;
+  // preserve expanded <details> across re-renders
+  document.querySelectorAll('#detail details').forEach((el) => { if (el.dataset.key) el.open ? state.openDetails.add(el.dataset.key) : state.openDetails.delete(el.dataset.key); });
+  $('#detailTitle').innerHTML = `Run trace <span class="badge ${statusBadge(d.status)}">${esc(d.status)}</span> <span class="mono" style="text-transform:none;letter-spacing:0">${esc(d.runId)}</span>`;
+  const canReplay = d.status === 'failed' || d.status === 'reverted';
+  const canRevert = d.counts.applied + d.counts.pending + d.counts.held > 0;
+  $('#detailActions').innerHTML =
+    `<button id="replayBtn" ${canReplay ? '' : 'disabled title="Replay is offered for failed or reverted runs"'}>Replay in Shadow Sandbox</button>` +
+    `<button class="danger" id="revertBtn" ${canRevert ? '' : 'disabled'}>Kill Switch / Revert Run</button>`;
+  const open = (k) => state.openDetails.has(k) ? 'open' : '';
+  const gateBadge = (s) => s.gate === 'blocked' ? '<span class="badge b-bad">Gate: BLOCKED spike</span>' : s.gate === 'airlock' ? '<span class="badge b-warn">Airlock</span>' : '<span class="badge b-ok">Gate: approved</span>';
+  const steps = d.steps.map((s, i) => {
+    const [label] = KIND[s.kind];
+    const detailsKey = (n) => `${s.id}-${n}`;
+    let body = '';
+    if (s.kind === 'email') {
+      body += `<div class="kv">subject <b>${esc(s.subject)}</b></div>` + (s.releaseAt ? `<div class="kv">release_at ${esc(new Date(s.releaseAt).toLocaleTimeString())}${s.releasedAt ? ' · released ' + esc(new Date(s.releasedAt).toLocaleTimeString()) : ''}${s.cancelledAt ? ' · cancelled ' + esc(new Date(s.cancelledAt).toLocaleTimeString()) : ''}</div>` : '');
+    } else {
+      if (s.kind === 'slack' && s.queue) body += `<div class="kv">airlock: <span class="badge ${statusBadge(s.queue.status)}">${esc(s.queue.status)}</span> ${esc(s.queue.reason)} · release_at ${esc(new Date(s.queue.releaseAt).toLocaleTimeString())}</div>`;
+      else if (s.kind === 'slack' && s.gate !== 'blocked') body += `<div class="kv">posted directly (not high-blast)</div>`;
+      body += `<div class="kv">${s.kind==='stripe' ? money(s.amountCents) + ' · ' : ''}${s.rowsAffected ?? 0} ${({s3:'object(s)',github:'item(s)',slack:'message(s)'})[s.kind] || 'row/object(s)'}${s.kind==='postgres' && s.amountCents ? ' · ' + money(s.amountCents) + ' moved' : ''}</div>`;
+      if (s.blockReason) body += `<div style="color:var(--bad)"><b>${esc(s.blockReason)}</b></div>`;
+      body += `<details data-key="${detailsKey('req')}" ${open(detailsKey('req'))}><summary>Request</summary><pre>${j(s.request)}</pre></details>`;
+      const hasBefore = Array.isArray(s.beforeState) ? s.beforeState.length > 0 : s.beforeState != null;
+      body += hasBefore ? `<details data-key="${detailsKey('before')}" ${open(detailsKey('before'))}><summary>Before-State snapshot (restore point)</summary><pre>${j(s.beforeState)}</pre></details>` : `<div class="kv">No Before-State captured (nothing executed).</div>`;
+      if (s.afterState && (!Array.isArray(s.afterState) || s.afterState.length)) body += `<details data-key="${detailsKey('after')}" ${open(detailsKey('after'))}><summary>After-State</summary><pre>${j(s.afterState)}</pre></details>`;
+      if (s.compensation) body += `<details data-key="${detailsKey('comp')}" ${open(detailsKey('comp'))}><summary>Compensation (revert result)</summary><pre>${j(s.compensation)}</pre></details>`;
+    }
+    if (s.error) body += `<div style="color:var(--bad)">${esc(s.error)}</div>`;
+    return `<li class="step"><div class="sh"><span class="kind">${s.seq ?? '·'}. ${label}</span>${gateBadge(s)}<span class="badge ${statusBadge(s.status)}">${esc(s.status)}</span><span class="tgt mono">${esc(s.action)} → ${esc(s.target)}</span><span class="kv" style="margin-left:auto">${esc(new Date(s.at).toLocaleTimeString())}</span></div><div class="sb">${body}</div></li>`;
+  }).join('');
+  let crash = '';
+  if (d.drill && d.drill.crashed) crash = `<li class="step" style="border-color:var(--bad)"><div class="sh"><span class="kind">${d.drill.mode === '5tool' ? 6 : 4}. 🧨 sync_to_crm</span><span class="badge b-bad">CRASHED</span><span class="tgt">Injected step-${d.drill.mode === '5tool' ? 6 : 4} failure (chaos drill). Triggers the LIFO rollback.</span></div></li>`;
+  $('#detail').innerHTML = `<ol class="timeline">${steps || '<div class="empty">No tool calls recorded.</div>'}${crash}</ol>${state.shadow ? renderShadow(state.shadow) : ''}`;
+}
+$('#detailActions').addEventListener('click', async (e) => {
+  if (e.target.id === 'revertBtn') await revertRun(state.runId, e.target);
+  if (e.target.id === 'replayBtn') {
+    e.target.disabled = true; e.target.textContent = 'Replaying…';
+    try { state.shadow = await api(`/api/runs/${encodeURIComponent(state.runId)}/replay`, { method: 'POST' }); toast('Shadow replay complete. Live rows and Stripe untouched.'); }
+    catch (err) { toast('Replay failed: ' + err.message); }
+    state.detailSig = null; renderDetail();
+  }
+});
+async function revertRun(runId, btn) {
+  if (!confirm(`Revert run ${runId}?\n\nThis cancels held emails and compensates applied actions in strict LIFO order (including a Stripe compensating charge if a refund was issued).`)) return;
+  btn.disabled = true;
+  try {
+    const r = await api(`/api/runs/${encodeURIComponent(runId)}/revert`, { method: 'POST' });
+    toast(r.complete ? `Reverted ${r.steps.length} action(s), cancelled ${r.emails.cancelled.length} email(s).` : 'Revert halted: see run trace for the failing step.');
+  } catch (err) { toast('Revert failed: ' + err.message); }
+  state.runId = runId; refresh();
+}
+function renderShadow(s) {
+  const ok = s.isolation.liveUnchanged;
+  const stepHtml = (st) => {
+    let inner = '';
+    if (st.rows) inner = st.rows.map((r) => `<div class="diff">#${esc(r.id)} ${Object.keys(r.changed).length ? Object.entries(r.changed).map(([k, [a, b]]) => `${esc(k)}: <span class="from">${esc(JSON.stringify(a))}</span> → <span class="to">${esc(JSON.stringify(b))}</span>`).join(' · ') : (r.after ? 'unchanged' : '<span class="from">deleted</span>')}</div>`).join('');
+    if (st.lines) inner += st.lines.map((l) => `<div class="diff">• ${esc(l)}</div>`).join('');
+    if (st.stripe) inner += `<div class="diff">${esc(st.stripe.chargeId)}: refunded ${money(st.stripe.refundedBeforeCents)} → <span class="to">${money(st.stripe.refundedAfterCents)}</span> (simulated)</div>`;
+    return `<div style="margin:4px 0"><span class="badge ${st.outcome==='simulated'?'b-ok':st.outcome==='shadow_error'?'b-bad':'b-mute'}">${esc(st.outcome)}</span> <span class="mono">${st.seq}. ${esc(st.actionType)} → ${esc(st.target)}</span>${st.matchesLiveAfterState===false ? ' <span class="badge b-warn">differs from live after-state</span>':''}${st.matchesLiveAfterState===true ? ' <span class="badge b-ok">matches live after-state</span>':''}${st.note ? `<div class="kv">${esc(st.note)}</div>`:''}${st.error ? `<div style="color:var(--bad)">${esc(st.error)}</div>`:''}${inner}</div>`;
+  };
+  return `<div class="shadow"><div class="row" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>Shadow-State Replay</b>
+    <span class="badge ${ok?'b-ok':'b-bad'}">${ok ? 'live data untouched (fingerprint verified)' : 'LIVE DATA CHANGED, investigate'}</span>
+    <span class="badge b-info">0 Stripe calls</span><span class="badge b-info">0 S3 writes</span><span class="badge b-info">0 GitHub calls</span><span class="badge b-info">0 Slack posts</span><span class="badge b-info">0 emails</span></div>
+    <div class="kv">Cloned the saved Before-State into TEMP tables inside a rolled-back transaction.</div>
+    <h2 style="margin:10px 0 4px">Forward replay</h2>${s.forward.map(stepHtml).join('')}
+    <h2 style="margin:10px 0 4px">LIFO revert (in shadow)</h2>${s.revert.map(stepHtml).join('') || '<div class="kv">Nothing to revert.</div>'}
+    <div style="margin-top:8px"><span class="badge ${s.identicalAfterRevert?'b-ok':'b-bad'}">${s.identicalAfterRevert ? 'Shadow state identical to Before-State after revert' : 'Shadow state differs after revert'}</span></div></div>`;
+}
+
+// ---------- chaos drill ----------
+let drillWasActive = false;
+async function loadDrill() {
+  const { drill, active } = await api('/api/drill');
+  const stoppable = active && drill && drill.mode === 'gemini';
+  $('#drillBtn').disabled = active && !stoppable;
+  $('#drillBtn').textContent = stoppable ? '■ Stop drill' : active ? '⏳ Drill running…' : '▶ Run Chaos Drill';
+  $('#drillBtn').dataset.stop = stoppable ? '1' : '';
+  $('#fiveBtn').disabled = active || ($('#fiveBtn').dataset.avail === '' );
+  $('#fiveBtn').textContent = active && drill && drill.mode === '5tool' ? '⏳ 5-Tool drill running…' : '▶ Run 5-Tool Chaos Drill';
+  if (!drill) return;
+  const lvl = { starting:'b-warn', running:'b-warn', crashed:'b-bad', reverting:'b-info', done:'b-ok', error:'b-bad' }[drill.status];
+  $('#drillBadge').innerHTML = `<span class="badge ${lvl}">${esc(drill.status)}</span> <span class="kv">${esc(drill.mode)}</span>`;
+  const log = $('#drillLog'); const atBottom = log.scrollTop + log.clientHeight >= log.scrollHeight - 20;
+  log.innerHTML = drill.events.map((e) => `<div class="${esc(e.level)}"><time>${new Date(e.t).toLocaleTimeString()}</time>${esc(e.msg)}</div>`).join('');
+  if (atBottom) log.scrollTop = log.scrollHeight;
+  if (drill.runId && active && state.runId !== drill.runId && !state.userPicked) state.runId = drill.runId;
+  drillWasActive = active;
+}
+$('#drillBtn').addEventListener('click', async () => {
+  if ($('#drillBtn').dataset.stop) { await api('/api/drill/stop', { method: 'POST' }).catch((e) => toast(e.message)); return refresh(); }
+  $('#drillBtn').disabled = true;
+  try { const r = await api('/api/drill', { method: 'POST', body: JSON.stringify({ mode: $('#mode').value }) }); state.userPicked = false; state.runId = null; state.detail = null; state.detailSig = null; toast('Chaos drill started.'); }
+  catch (e) { toast(e.message); }
+  refresh();
+});
+$('#fiveBtn').addEventListener('click', async () => {
+  $('#fiveBtn').disabled = true;
+  try { await api('/api/drill', { method: 'POST', body: JSON.stringify({ mode: '5tool' }) }); state.userPicked = false; state.runId = null; state.detail = null; state.detailSig = null; toast('5-tool chaos drill started.'); }
+  catch (e) { toast(e.message); }
+  refresh();
+});
+$('#runs').addEventListener('click', () => { state.userPicked = true; });
+
+async function refresh() {
+  await Promise.allSettled([loadRuns(), loadAirlock(), loadDrill(), loadDetail(), loadSandbox()]);
+  if (state.runId && !state.detail) return;
+}
+loadHealth(); refresh();
+setInterval(refresh, 1000);
+setInterval(loadHealth, 15000);
+</script>
+</body>
+</html>

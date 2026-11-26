@@ -1,0 +1,28 @@
+{
+  "name": "rollikey-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Rollikey: blast-radius gate, staging airlock and deterministic revert for AI agent actions",
+  "license": "ISC",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "db:migrate": "npm run db:migrate -w @rollikey/mcp",
+    "db:seed": "npm run db:seed -w @rollikey/mcp",
+    "dev": "npm run dev -w @rollikey/mcp",
+    "worker": "npm run worker -w @rollikey/mcp",
+    "demo": "npm run demo -w @rollikey/mcp",
+    "dashboard": "npm run dashboard -w @rollikey/mcp",
+    "test": "npm test -w @rollikey/mcp",
+    "drill:5tool": "npm run drill:5tool -w @rollikey/mcp"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

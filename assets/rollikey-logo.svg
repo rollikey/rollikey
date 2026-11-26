@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1932 1932" width="512" height="512" role="img" aria-label="Rollikey">
+  <rect width="1932" height="1932" fill="#000000"/>
+  <defs>
+    <path id="arc" d="M966 287A679 679 0 0 0 465 1420L368 1527L748 1562L675 1198L568 1310A531 531 0 0 1 966 435Z"/>
+  </defs>
+  <use href="#arc" fill="#FFFFFF"/>
+  <use href="#arc" fill="#10B981" transform="rotate(180 966 966)"/>
+  <polygon fill="#10B981" points="752,973 820,908 911,999 1112,797 1180,864 911,1133"/>
+</svg>

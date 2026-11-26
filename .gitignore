@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+*.log
+
+# local sandbox runtime data (MinIO normally lives in the Docker volume "rollikey-minio-data")
+.minio/
+minio-data/
+.rollikey/
+*.tsbuildinfo
+coverage/
+.DS_Store

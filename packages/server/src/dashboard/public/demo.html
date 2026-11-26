@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rollikey · Side-by-Side Disaster Demo</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+:root{
+  --bg:#07090d;--panel:#10141b;--line:#262d3a;--text:#f5f7fa;--muted:#9aa5b8;
+  --red:#ff4d4d;--redbg:#2a0d0f;--redline:#7a1f24;
+  --green:#2fe38a;--greenbg:#0b2619;--greenline:#18704a;
+  --amber:#ffc24a;--amberbg:#2b2108;--blue:#6f93ff;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+header{display:flex;align-items:center;gap:20px;padding:14px 28px;border-bottom:1px solid var(--line)}
+.brand{font-weight:800;letter-spacing:.5px;font-size:18px}
+.brand small{color:var(--muted);font-weight:500;margin-left:10px;font-size:14px}
+.spacer{flex:1}
+#timer{font:700 22px ui-monospace,Menlo,monospace;color:var(--muted);min-width:78px;text-align:right}
+#run{font:800 20px inherit;font-family:inherit;padding:14px 28px;border-radius:12px;border:0;background:#fff;color:#07090d;cursor:pointer;letter-spacing:.2px}
+#run:hover:not(:disabled){background:#dfe6ff}
+#run:disabled{opacity:.45;cursor:progress}
+a.back{color:var(--muted);text-decoration:none;font-size:14px}
+.steps{display:flex;gap:10px;padding:12px 28px;border-bottom:1px solid var(--line)}
+.stp{flex:1;padding:9px 14px;border:1px solid var(--line);border-radius:10px;color:var(--muted);font-weight:600;font-size:15px;display:flex;gap:10px;align-items:center;transition:all .3s}
+.stp b{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--line);color:var(--text);font-size:14px}
+.stp.on{color:var(--text);border-color:#fff}
+.stp.on b{background:#fff;color:#000}
+.stp.crash.on{border-color:var(--red);color:var(--red)}
+.stp.crash.on b{background:var(--red);color:#000}
+main{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:0;min-height:0}
+.panel{display:flex;flex-direction:column;min-width:0;min-height:0;padding:20px 28px;gap:14px;transition:background .4s}
+.panel.left{border-right:1px solid var(--line)}
+.panel.left.live{background:linear-gradient(180deg,#14090b 0,var(--bg) 60%)}
+.panel.right.live{background:linear-gradient(180deg,#07140e 0,var(--bg) 60%)}
+.ph{display:flex;align-items:flex-start;gap:14px}
+.ph h2{margin:0;font-size:26px;line-height:1.15}
+.left h2{color:var(--red)}.right h2{color:var(--green)}
+.ph .sub{color:var(--muted);font-size:14px;margin-top:3px}
+.code{margin-left:auto;background:#0b0f15;border:1px solid var(--greenline);border-radius:10px;padding:8px 12px;font:12.5px/1.55 ui-monospace,Menlo,monospace;color:#bff5d9;white-space:pre}
+.code i{color:#6c7a90;font-style:normal}
+.banner{border-radius:12px;padding:12px 16px;font-weight:800;font-size:20px;letter-spacing:.3px;border:2px solid var(--line);color:var(--muted);transition:all .3s;min-height:54px;display:flex;align-items:center;gap:10px}
+.banner.run{border-color:var(--amber);color:var(--amber);background:var(--amberbg)}
+.banner.bad{border-color:var(--red);color:var(--red);background:var(--redbg)}
+.banner.good{border-color:var(--green);color:var(--green);background:var(--greenbg)}
+.total{border-radius:14px;padding:14px 18px;border:2px solid var(--line);display:flex;align-items:baseline;gap:14px;transition:all .3s}
+.total .lbl{font-size:13px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:700}
+.total .big{font:800 52px/1 ui-monospace,Menlo,monospace}
+.total.bad{border-color:var(--red);background:var(--redbg)}.total.bad .big{color:var(--red)}
+.total.good{border-color:var(--green);background:var(--greenbg)}.total.good .big{color:var(--green)}
+.total.warn{border-color:var(--amber);background:var(--amberbg)}.total.warn .big{color:var(--amber)}
+.total .note{margin-left:auto;font-size:13px;color:var(--muted);max-width:210px;text-align:right}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.cell{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--panel);transition:all .3s}
+.cell .k{font-size:11.5px;text-transform:uppercase;letter-spacing:.9px;color:var(--muted);font-weight:700}
+.cell .v{font:800 26px/1.2 ui-monospace,Menlo,monospace;margin-top:2px}
+.cell .s{font-size:12px;color:var(--muted)}
+.cell.bad{border-color:var(--redline);background:var(--redbg)}.cell.bad .v{color:var(--red)}
+.cell.good .v{color:var(--green)}
+.cell.warn{border-color:#6b5316;background:var(--amberbg)}.cell.warn .v{color:var(--amber)}
+.air{border:2px solid var(--line);border-radius:12px;padding:10px 14px;display:none}
+.air.show{display:block}
+.air.held{border-color:var(--amber);background:var(--amberbg)}
+.air.cancelled{border-color:var(--green);background:var(--greenbg)}
+.air .row{display:flex;align-items:center;gap:12px;font-weight:700}
+.air .cd{margin-left:auto;font:800 30px ui-monospace,Menlo,monospace}
+.air.held .cd{color:var(--amber)}.air.cancelled .cd{color:var(--green)}
+.air .bar{height:6px;border-radius:3px;background:var(--line);margin-top:8px;overflow:hidden}
+.air .bar i{display:block;height:100%;background:var(--amber);width:0;transition:width .3s linear}
+.air.cancelled .bar i{background:var(--green)}
+.verify{display:none;border:2px solid var(--green);background:var(--greenbg);border-radius:12px;padding:10px 14px}
+.verify.show{display:block}
+.verify div{font-weight:700;color:var(--green);font-size:15px;line-height:1.7}
+.verify div.no{color:var(--red)}
+.verify .rv{font:800 22px ui-monospace,Menlo,monospace;color:#fff;margin-bottom:4px}
+.feed{flex:1;min-height:120px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:8px 4px}
+.ev{display:flex;gap:10px;padding:6px 12px;font-size:15px;line-height:1.35;animation:in .35s ease-out}
+.ev .t{color:var(--muted);font:12px ui-monospace,Menlo,monospace;min-width:44px;padding-top:2px}
+.ev.step{font-weight:800;background:#171d28;margin:6px 0;border-left:4px solid #fff;color:#fff}
+.ev.ok{color:var(--green)}.ev.bad{color:var(--red);font-weight:700}.ev.warn{color:var(--amber);font-weight:700}.ev.info{color:var(--text)}
+.ev.crash{font-weight:800;font-size:17px;background:var(--redbg);border-left:4px solid var(--red)}
+a.pilot{font-size:13px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:6px;padding:5px 10px}a.pilot:hover{color:var(--text)}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.err{color:var(--red);padding:8px 28px;font-weight:700}
+@media (max-width:1000px){main{grid-template-columns:1fr}.panel.left{border-right:0;border-bottom:1px solid var(--line)}.grid{grid-template-columns:repeat(2,1fr)}.code{display:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><img src="/rollikey-logo.svg" alt="Rollikey" width="32" height="32" style="vertical-align:middle;margin-right:10px;border-radius:8px">ROLLIKEY<small>Same rogue AI agent. Same 4 steps. Two outcomes.</small></div>
+  <div class="spacer"></div>
+  <a class="pilot" href="{{PILOT_URL}}" target="_blank" rel="noopener">Hosted pilot for startups →</a>
+  <a class="back" href="/">← Dashboard</a>
+  <div id="timer">0:00</div>
+  <button id="run">Run Side-by-Side Comparison</button>
+</header>
+<div class="steps" id="steps"></div>
+<div class="err" id="err" hidden></div>
+<main>
+  <section class="panel left" id="L">
+    <div class="ph"><div><h2>Unprotected AI Agent</h2><div class="sub">Direct access to the database, S3, Stripe and email</div></div></div>
+    <div class="banner" id="Lb">Ready</div>
+    <div class="total" id="Lt"><div><div class="lbl">Total damage</div><div class="big" id="Ltv">$0.00</div></div><div class="note" id="Ltn">Press the button to run the agent</div></div>
+    <div class="grid" id="Lg"></div>
+    <div class="feed" id="Lf"></div>
+  </section>
+  <section class="panel right" id="R">
+    <div class="ph"><div><h2>Protected by Rollikey</h2><div class="sub">3 lines of code · same agent, same tools</div></div>
+      <div class="code"><i>// the entire integration</i>
+const run = rollikey.run();
+try { await agent(run); }
+catch { await run.revert(); }</div></div>
+    <div class="banner" id="Rb">Ready</div>
+    <div class="total" id="Rt"><div><div class="lbl">Total damage</div><div class="big" id="Rtv">$0.00</div></div><div class="note" id="Rtn">Press the button to run the agent</div></div>
+    <div class="grid" id="Rg"></div>
+    <div class="air" id="Ra"><div class="row"><span id="Ral">Airlock</span><span class="cd" id="Rac">60s</span></div><div class="bar"><i id="Rai"></i></div></div>
+    <div class="verify" id="Rv"><div class="rv" id="Rrv"></div><div id="Rvl"></div></div>
+    <div class="feed" id="Rf"></div>
+  </section>
+</main>
+<footer style="text-align:center;padding:10px;color:var(--muted);font-size:12px" class="mono">npm install @rollikey/sdk &nbsp;·&nbsp; npx -y @rollikey/mcp &nbsp;·&nbsp; github.com/rollikey/rollikey</footer>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const usd = (c) => '$' + (c / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+  let skew = 0, startedMs = 0, running = false, seen = { left: 0, right: 0 }, runId = null, lastState = null;
+
+  async function api(path, opts = {}) {
+    const r = await fetch(path, { ...opts, headers: { 'x-rollikey-ui': '1', 'content-type': 'application/json' } });
+    const body = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(body.error || r.statusText);
+    return body;
+  }
+
+  function cells(side, m, phase) {
+    const g = $(side === 'left' ? 'Lg' : 'Rg');
+    const tone = (n, live) => (n > 0 ? (side === 'left' || phase === 'restored' ? 'bad' : 'warn') : 'good');
+    const items = [
+      ['Balances corrupted', String(m.rowsCorrupted), m.rowsCorrupted ? usd(m.balanceDamageCents) + ' wrong' : 'all correct', tone(m.rowsCorrupted)],
+      ['Stripe damage', usd(m.stripeDamageCents), side === 'left' ? 'refunds + unwanted charge' : (m.holdsOutstanding ? 'hold only, uncaptured' : 'net movement'), tone(m.stripeDamageCents)],
+      ['Files deleted', m.filesDeleted + '/' + m.filesTotal, side === 'right' && m.filesDeleted ? 'vaulted, restorable' : 'S3 invoices', tone(m.filesDeleted)],
+      ['Emails leaked', String(m.emailsLeaked), side === 'right' ? 'held in airlock' : 'to a stranger', tone(m.emailsLeaked)],
+    ];
+    if (side === 'right') { items[0][2] = m.rowsCorrupted ? usd(m.balanceDamageCents) + ' · snapshotted' : 'all correct'; }
+    g.replaceChildren(...items.map(([k, v, s, t]) => { const c = el('div', 'cell ' + t); c.append(el('div', 'k', k), el('div', 'v', v), el('div', 's', s)); return c; }));
+  }
+
+  function total(side, s) {
+    const d = s[side]; const m = d.metrics; const box = $(side === 'left' ? 'Lt' : 'Rt');
+    const dmg = m.totalDamageCents;
+    const dataHit = m.rowsCorrupted + m.filesDeleted + m.emailsLeaked;
+    let tone = '', note = 'Press the button to run the agent';
+    if (s.status !== 'idle') {
+      if (side === 'left') { tone = dmg || dataHit ? 'bad' : 'good'; note = dmg || dataHit ? `${m.rowsCorrupted} rows · ${m.filesDeleted} files · ${m.emailsLeaked} email leaked` : 'Agent starting…'; }
+      else if (d.phase === 'restored') { tone = dmg || dataHit ? 'bad' : 'good'; note = '0 rows · 0 files · 0 emails leaked · 100% restored'; }
+      else { tone = dmg || dataHit ? 'warn' : 'good'; note = dmg || dataHit ? 'Contained: every change is snapshotted and revertable' : 'Gate + snapshots watching'; }
+    }
+    box.className = 'total ' + tone;
+    $(side === 'left' ? 'Ltv' : 'Rtv').textContent = usd(dmg);
+    $(side === 'left' ? 'Ltn' : 'Rtn').textContent = note;
+  }
+
+  function banner(s) {
+    const L = $('Lb'), R = $('Rb');
+    const lp = s.left.phase, rp = s.right.phase;
+    L.className = 'banner ' + (lp === 'crashed' ? 'bad' : lp === 'running' ? 'run' : '');
+    L.textContent = lp === 'crashed' ? '✖ AGENT CRASHED · NO WAY BACK' : lp === 'running' ? '● Agent running…' : 'Ready';
+    R.className = 'banner ' + (rp === 'restored' ? 'good' : rp === 'crashed' ? 'bad' : rp === 'reverting' ? 'run' : rp === 'running' ? 'run' : '');
+    R.textContent = rp === 'restored' ? `✔ REVERTED IN ${s.right.revertMs} ms · 100% RESTORED` : rp === 'reverting' ? '↺ revert(runId) · LIFO undo…' : rp === 'crashed' ? '✖ Step-4 crash detected' : rp === 'running' ? '● Agent running under Rollikey…' : 'Ready';
+    $('L').classList.toggle('live', lp !== 'idle'); $('R').classList.toggle('live', rp !== 'idle');
+  }
+
+  function feed(s) {
+    for (const e of s.events) {
+      if (seen.ids.has(e.i)) continue;
+      seen.ids.add(e.i);
+      const box = $(e.side === 'left' ? 'Lf' : 'Rf');
+      const row = el('div', 'ev ' + (e.kind === 'step' ? 'step' : e.kind === 'crash' ? 'crash' : e.level));
+      row.append(el('span', 't', (e.ms / 1000).toFixed(1) + 's'), el('span', '', (e.kind === 'blocked' ? '🛑 ' : e.kind === 'snapshot' ? '📸 ' : e.kind === 'airlock' ? '🔒 ' : '') + e.msg));
+      box.append(row); box.scrollTop = box.scrollHeight;
+    }
+  }
+
+  function airlock(s) {
+    const a = s.right.airlock, box = $('Ra');
+    box.classList.toggle('show', Boolean(a));
+    if (!a) return;
+    const total = s.holdSeconds * 1000;
+    const now = Date.now() + skew;
+    const left = Math.max(0, new Date(a.releaseAt).getTime() - now);
+    box.className = 'air show ' + a.status;
+    if (a.status === 'held') { $('Ral').textContent = '🔒 Airlock · email to ' + 'jordan.whitfield@…' + ' held'; $('Rac').textContent = Math.ceil(left / 1000) + 's'; $('Rai').style.width = (100 * left / total) + '%'; }
+    else if (a.status === 'cancelled') { $('Ral').textContent = '✔ Email cancelled before delivery'; $('Rac').textContent = '0 sent'; $('Rai').style.width = '100%'; }
+    else { $('Ral').textContent = 'Email released'; $('Rac').textContent = ''; }
+  }
+
+  function verify(s) {
+    const v = s.right.verify, box = $('Rv');
+    box.classList.toggle('show', Boolean(v));
+    if (!v) return;
+    $('Rrv').textContent = `revert(runId) · ${s.right.revertMs} ms`;
+    $('Rvl').replaceChildren(...v.map((c) => el('div', c.ok ? '' : 'no', (c.ok ? '✔ ' : '✖ ') + c.label)));
+  }
+
+  function steps(s) {
+    const box = $('steps');
+    if (!box.children.length) s.stepTitles.forEach((t, i) => { const d = el('div', 'stp' + (i === 3 ? ' crash' : '')); d.append(el('b', '', String(i + 1)), el('span', '', t)); box.append(d); });
+    [...box.children].forEach((d, i) => d.classList.toggle('on', s.step >= i + 1 && s.status !== 'idle'));
+  }
+
+  function tick() {
+    if (!lastState) return;
+    const s = lastState;
+    if (s.startedAt) {
+      const end = s.finishedAt ? new Date(s.finishedAt).getTime() : Date.now() + skew;
+      const sec = Math.max(0, Math.floor((end - new Date(s.startedAt).getTime()) / 1000));
+      $('timer').textContent = Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+    }
+    airlock(s);
+  }
+
+  function render(s) {
+    lastState = s;
+    skew = new Date(s.now).getTime() - Date.now();
+    if (s.id !== runId) { runId = s.id; seen = { ids: new Set(), left: 0, right: 0 }; $('Lf').replaceChildren(); $('Rf').replaceChildren(); }
+    running = s.status === 'running';
+    $('run').disabled = running;
+    $('run').textContent = running ? 'Running…' : s.status === 'done' ? 'Run it again' : 'Run Side-by-Side Comparison';
+    $('err').hidden = !s.error; $('err').textContent = s.error ? 'Demo error: ' + s.error : '';
+    steps(s); banner(s); cells('left', s.left.metrics, s.left.phase); cells('right', s.right.metrics, s.right.phase);
+    total('left', s); total('right', s); feed(s); verify(s); tick();
+  }
+
+  async function poll() {
+    try { render(await api('/api/demo')); } catch (e) { $('err').hidden = false; $('err').textContent = e.message; }
+    setTimeout(poll, running ? 250 : 1000);
+  }
+  setInterval(tick, 250);
+
+  $('run').addEventListener('click', async () => {
+    $('run').disabled = true;
+    try { await api('/api/demo/run', { method: 'POST', body: '{}' }); } catch (e) { $('err').hidden = false; $('err').textContent = e.message; }
+    running = true;
+  });
+  seen = { ids: new Set(), left: 0, right: 0 };
+  poll();
+})();
+</script>
+</body>
+</html>
