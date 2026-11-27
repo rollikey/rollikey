@@ -322,6 +322,11 @@ export function createDashboard({ sp, port, host = '127.0.0.1' }: DashboardOptio
       if (demo.running) throw new HttpError(409, 'A demo run is already in progress', 'demo_running');
       return json(res, 202, { id: demo.start({ speed: demoSpeed }) });
     }
+    if (method === 'POST' && path === '/api/demo/pause') {
+      if (!demo.running) throw new HttpError(409, 'No demo run in progress', 'demo_not_running');
+      return json(res, 200, await demo.pause());
+    }
+    if (method === 'POST' && path === '/api/demo/resume') return json(res, 200, await demo.resume());
     if (method === 'GET' && path === '/api/health') return json(res, 200, await health());
     if (method === 'GET' && path === '/api/runs') return json(res, 200, { now: new Date().toISOString(), runs: await listRuns() });
     if (method === 'GET' && path === '/api/sandbox') return json(res, 200, await sandboxView());

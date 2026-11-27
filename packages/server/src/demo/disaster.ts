@@ -40,6 +40,10 @@ export interface SideMetrics {
 export interface DemoState {
   id: string | null;
   status: 'idle' | 'running' | 'done' | 'error';
+  paused: boolean;
+  pausedAt: string | null;
+  /** Total ms spent paused in completed pauses. */
+  pausedMs: number;
   startedAt: string | null;
   finishedAt: string | null;
   now: string;
@@ -86,6 +90,10 @@ export class DisasterDemo {
   private readonly fakeLeft = new FakeStripe();
   private readonly fakeRight = new FakeStripe();
   private t0 = 0;
+  private pauseStart: number | null = null;
+  private pausedTotal = 0;
+  private resumeWaiters: (() => void)[] = [];
+  private shiftedHolds: string[] = [];
   private emailsLeaked = 0;
   private leftRun = '';
   private rightRun = '';
@@ -104,7 +112,7 @@ export class DisasterDemo {
 
   private fresh(): DemoState {
     return {
-      id: null, status: 'idle', startedAt: null, finishedAt: null, now: new Date().toISOString(),
+      id: null, status: 'idle', paused: false, pausedAt: null, pausedMs: 0, startedAt: null, finishedAt: null, now: new Date().toISOString(),
       holdSeconds: this.demoSp?.config.airlock.holdSeconds ?? 60, step: 0, stepTitles: STEP_TITLES, events: [],
       left: { phase: 'idle', metrics: emptyMetrics() },
       right: { phase: 'idle', metrics: emptyMetrics(), airlock: null, revertMs: null, verify: null },
@@ -113,10 +121,11 @@ export class DisasterDemo {
   }
 
   get running() { return this.state.status === 'running'; }
+  get paused() { return this.pauseStart !== null; }
   snapshot(): DemoState { return { ...this.state, now: new Date().toISOString() }; }
 
   private emit(side: Side, kind: DemoEvent['kind'], level: DemoLevel, msg: string) {
-    this.state.events.push({ i: this.state.events.length, ms: Date.now() - this.t0, side, kind, level, step: this.state.step, msg });
+    this.state.events.push({ i: this.state.events.length, ms: this.activeNow() - this.t0, side, kind, level, step: this.state.step, msg });
   }
 
   /** Start a run in the background; resolves immediately with the id. */
@@ -128,6 +137,9 @@ export class DisasterDemo {
     this.state.status = 'running';
     this.state.startedAt = new Date().toISOString();
     this.t0 = Date.now();
+    this.pauseStart = null;
+    this.pausedTotal = 0;
+    this.shiftedHolds = [];
     this.leftRun = `${id}_unprotected`;
     this.rightRun = `${id}_protected`;
     this.run(opts.speed ?? 1).catch((err) => {
@@ -137,6 +149,61 @@ export class DisasterDemo {
       this.log(`demo failed: ${(err as Error).stack}`);
     });
     return id;
+  }
+
+  /** Wall clock minus time spent paused. */
+  private activeNow(): number {
+    return Date.now() - this.pausedTotal - (this.pauseStart === null ? 0 : Date.now() - this.pauseStart);
+  }
+
+  /** Sleep for `ms` of active (unpaused) time. */
+  private async pausableSleep(ms: number) {
+    if (ms <= 0) return;
+    const target = this.activeNow() + ms;
+    for (;;) {
+      if (this.pauseStart !== null) await new Promise<void>((r) => this.resumeWaiters.push(r));
+      const left = target - this.activeNow();
+      if (left <= 0) return;
+      await sleep(Math.min(left, 50));
+    }
+  }
+
+  /** Freeze playback: timers stop and any held airlock email is pushed out so it cannot release while paused. */
+  async pause(): Promise<DemoState> {
+    if (!this.running) throw new Error('No demo run in progress');
+    if (this.pauseStart !== null) return this.snapshot();
+    this.pauseStart = Date.now();
+    this.state.paused = true;
+    this.state.pausedAt = new Date(this.pauseStart).toISOString();
+    const { rows } = await this.sp.infra.pool.query<{ id: string }>(
+      `UPDATE rollikey_airlock_queue SET release_at = release_at + interval '1 day' WHERE run_id = $1 AND status = 'held' RETURNING id`, [this.rightRun]);
+    this.shiftedHolds = rows.map((r) => r.id);
+    return this.snapshot();
+  }
+
+  /** Resume from the exact paused point; held airlock emails keep their remaining countdown. */
+  async resume(): Promise<DemoState> {
+    if (this.pauseStart === null) return this.snapshot();
+    const pausedFor = Date.now() - this.pauseStart;
+    const pool = this.sp.infra.pool;
+    if (this.shiftedHolds.length) {
+      await pool.query(
+        `UPDATE rollikey_airlock_queue SET release_at = release_at - interval '1 day' + make_interval(secs => $2::double precision) WHERE id = ANY($1::uuid[])`,
+        [this.shiftedHolds, pausedFor / 1000]);
+      this.shiftedHolds = [];
+    }
+    const a = this.state.right.airlock;
+    if (a) {
+      const row = (await pool.query<{ release_at: Date }>(`SELECT release_at FROM rollikey_airlock_queue WHERE id = $1`, [a.id])).rows[0];
+      if (row) a.releaseAt = row.release_at.toISOString();
+    }
+    this.pausedTotal += pausedFor;
+    this.pauseStart = null;
+    this.state.paused = false;
+    this.state.pausedAt = null;
+    this.state.pausedMs = this.pausedTotal;
+    for (const r of this.resumeWaiters.splice(0)) r();
+    return this.snapshot();
   }
 
   /** Run to completion (used by tests). */
@@ -354,7 +421,7 @@ export class DisasterDemo {
   }
 
   private async run(speed: number) {
-    const wait = (s: number) => sleep(Math.round(s * 1000 * speed));
+    const wait = (s: number) => this.pausableSleep(Math.round(s * 1000 * speed));
     await this.reset();
     await this.refreshMetrics();
     this.state.left.phase = 'running';
@@ -404,6 +471,7 @@ export class DisasterDemo {
     })();
 
     await Promise.all([left, right]);
+    if (this.pauseStart !== null) await this.resume();
     await this.refreshMetrics();
     this.state.status = 'done';
     this.state.finishedAt = new Date().toISOString();

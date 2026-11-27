@@ -21,10 +21,11 @@ header{display:flex;align-items:center;gap:20px;padding:14px 28px;border-bottom:
 .brand small{color:var(--muted);font-weight:500;margin-left:10px;font-size:14px}
 .spacer{flex:1}
 #timer{font:700 22px ui-monospace,Menlo,monospace;color:var(--muted);min-width:78px;text-align:right}
-#run{font:800 20px inherit;font-family:inherit;padding:14px 28px;border-radius:12px;border:0;background:#fff;color:#07090d;cursor:pointer;letter-spacing:.2px}
+#run{font:800 20px inherit;font-family:inherit;padding:14px 28px;border-radius:12px;border:0;background:#fff;color:#07090d;cursor:pointer;letter-spacing:.2px;min-width:340px}
 #run:hover:not(:disabled){background:#dfe6ff}
-#run:disabled{opacity:.45;cursor:progress}
-a.back{color:var(--muted);text-decoration:none;font-size:14px}
+#run:disabled{opacity:.6;cursor:progress}
+#run.pause{background:var(--amber)}
+#run.play{background:var(--green)}
 .steps{display:flex;gap:10px;padding:12px 28px;border-bottom:1px solid var(--line)}
 .stp{flex:1;padding:9px 14px;border:1px solid var(--line);border-radius:10px;color:var(--muted);font-weight:600;font-size:15px;display:flex;gap:10px;align-items:center;transition:all .3s}
 .stp b{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--line);color:var(--text);font-size:14px}
@@ -32,61 +33,62 @@ a.back{color:var(--muted);text-decoration:none;font-size:14px}
 .stp.on b{background:#fff;color:#000}
 .stp.crash.on{border-color:var(--red);color:var(--red)}
 .stp.crash.on b{background:var(--red);color:#000}
-main{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:0;min-height:0}
-.panel{display:flex;flex-direction:column;min-width:0;min-height:0;padding:20px 28px;gap:14px;transition:background .4s}
+main{flex:1 1 0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr);align-items:stretch;gap:0;min-height:0;overflow:hidden}
+.panel{display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;padding:18px 28px;gap:14px;transition:background .4s}
+.phead{flex-shrink:0;display:flex;flex-direction:column;gap:12px}
+.read{flex:1 1 0;min-height:0;overflow-y:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel);display:flex;flex-direction:column}
+.pfoot{flex-shrink:0;display:flex;flex-direction:column;gap:10px}
 .panel.left{border-right:1px solid var(--line)}
 .panel.left.live{background:linear-gradient(180deg,#14090b 0,var(--bg) 60%)}
 .panel.right.live{background:linear-gradient(180deg,#07140e 0,var(--bg) 60%)}
-.ph{display:flex;align-items:flex-start;gap:14px}
-.ph h2{margin:0;font-size:26px;line-height:1.15}
+.ph{height:56px;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.ph h2{margin:0;font-size:26px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .left h2{color:var(--red)}.right h2{color:var(--green)}
-.ph .sub{color:var(--muted);font-size:14px;margin-top:3px}
-.code{margin-left:auto;background:#0b0f15;border:1px solid var(--greenline);border-radius:10px;padding:8px 12px;font:12.5px/1.55 ui-monospace,Menlo,monospace;color:#bff5d9;white-space:pre}
-.code i{color:#6c7a90;font-style:normal}
-.banner{border-radius:12px;padding:12px 16px;font-weight:800;font-size:20px;letter-spacing:.3px;border:2px solid var(--line);color:var(--muted);transition:all .3s;min-height:54px;display:flex;align-items:center;gap:10px}
+.ph .sub{color:var(--muted);font-size:14px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.banner{border-radius:12px;padding:0 16px;font-weight:800;font-size:20px;letter-spacing:.3px;border:2px solid var(--line);color:var(--muted);transition:all .3s;height:54px;display:flex;align-items:center;gap:10px;white-space:nowrap;overflow:hidden}
 .banner.run{border-color:var(--amber);color:var(--amber);background:var(--amberbg)}
 .banner.bad{border-color:var(--red);color:var(--red);background:var(--redbg)}
 .banner.good{border-color:var(--green);color:var(--green);background:var(--greenbg)}
-.total{border-radius:14px;padding:14px 18px;border:2px solid var(--line);display:flex;align-items:baseline;gap:14px;transition:all .3s}
+.total{border-radius:14px;padding:12px 18px;height:84px;border:2px solid var(--line);display:flex;align-items:center;gap:14px;transition:all .3s}
 .total .lbl{font-size:13px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:700}
-.total .big{font:800 52px/1 ui-monospace,Menlo,monospace}
+.total .big{font:800 44px/1 ui-monospace,Menlo,monospace;margin-top:4px}
 .total.bad{border-color:var(--red);background:var(--redbg)}.total.bad .big{color:var(--red)}
 .total.good{border-color:var(--green);background:var(--greenbg)}.total.good .big{color:var(--green)}
 .total.warn{border-color:var(--amber);background:var(--amberbg)}.total.warn .big{color:var(--amber)}
-.total .note{margin-left:auto;font-size:13px;color:var(--muted);max-width:210px;text-align:right}
+.total .note{margin-left:auto;font-size:13px;color:var(--muted);max-width:240px;text-align:right;line-height:1.35;max-height:2.7em;overflow:hidden}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .cell{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--panel);transition:all .3s}
 .cell .k{font-size:11.5px;text-transform:uppercase;letter-spacing:.9px;color:var(--muted);font-weight:700}
-.cell .v{font:800 26px/1.2 ui-monospace,Menlo,monospace;margin-top:2px}
+.cell .k,.cell .s{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell .v{font:800 24px/1.2 ui-monospace,Menlo,monospace;margin-top:2px;white-space:nowrap}
 .cell .s{font-size:12px;color:var(--muted)}
 .cell.bad{border-color:var(--redline);background:var(--redbg)}.cell.bad .v{color:var(--red)}
 .cell.good .v{color:var(--green)}
 .cell.warn{border-color:#6b5316;background:var(--amberbg)}.cell.warn .v{color:var(--amber)}
-.air{border:2px solid var(--line);border-radius:12px;padding:10px 14px;display:none}
+.air{position:sticky;top:0;z-index:1;flex-shrink:0;margin:8px 8px 0;border:2px solid var(--line);border-radius:12px;padding:10px 14px;display:none;background:var(--panel)}
 .air.show{display:block}
 .air.held{border-color:var(--amber);background:var(--amberbg)}
-.air.cancelled{border-color:var(--green);background:var(--greenbg)}
+.air.cancelled{position:static;border-color:var(--green);background:var(--greenbg)}
 .air .row{display:flex;align-items:center;gap:12px;font-weight:700}
 .air .cd{margin-left:auto;font:800 30px ui-monospace,Menlo,monospace}
 .air.held .cd{color:var(--amber)}.air.cancelled .cd{color:var(--green)}
 .air .bar{height:6px;border-radius:3px;background:var(--line);margin-top:8px;overflow:hidden}
 .air .bar i{display:block;height:100%;background:var(--amber);width:0;transition:width .3s linear}
 .air.cancelled .bar i{background:var(--green)}
-.verify{display:none;border:2px solid var(--green);background:var(--greenbg);border-radius:12px;padding:10px 14px}
+.verify{display:none;flex-shrink:0;margin:4px 8px 10px;border:2px solid var(--green);background:var(--greenbg);border-radius:12px;padding:10px 14px}
 .verify.show{display:block}
 .verify div{font-weight:700;color:var(--green);font-size:15px;line-height:1.7}
 .verify div.no{color:var(--red)}
 .verify .rv{font:800 22px ui-monospace,Menlo,monospace;color:#fff;margin-bottom:4px}
-.feed{flex:1;min-height:120px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:8px 4px}
+.feed{flex-shrink:0;padding:8px 4px}
 .ev{display:flex;gap:10px;padding:6px 12px;font-size:15px;line-height:1.35;animation:in .35s ease-out}
 .ev .t{color:var(--muted);font:12px ui-monospace,Menlo,monospace;min-width:44px;padding-top:2px}
 .ev.step{font-weight:800;background:#171d28;margin:6px 0;border-left:4px solid #fff;color:#fff}
 .ev.ok{color:var(--green)}.ev.bad{color:var(--red);font-weight:700}.ev.warn{color:var(--amber);font-weight:700}.ev.info{color:var(--text)}
 .ev.crash{font-weight:800;font-size:17px;background:var(--redbg);border-left:4px solid var(--red)}
-a.pilot{font-size:13px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:6px;padding:5px 10px}a.pilot:hover{color:var(--text)}
 @keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .err{color:var(--red);padding:8px 28px;font-weight:700}
-@media (max-width:1000px){main{grid-template-columns:1fr}.panel.left{border-right:0;border-bottom:1px solid var(--line)}.grid{grid-template-columns:repeat(2,1fr)}.code{display:none}}
+@media (max-width:1000px){main{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) minmax(0,1fr)}.panel.left{border-right:0;border-bottom:1px solid var(--line)}.grid{grid-template-columns:repeat(2,1fr)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -94,33 +96,37 @@ a.pilot{font-size:13px;color:var(--muted);text-decoration:none;border:1px solid 
 <header>
   <div class="brand"><img src="/rollikey-logo.svg" alt="Rollikey" width="32" height="32" style="vertical-align:middle;margin-right:10px;border-radius:8px">ROLLIKEY<small>Same rogue AI agent. Same 4 steps. Two outcomes.</small></div>
   <div class="spacer"></div>
-  <a class="pilot" href="{{PILOT_URL}}" target="_blank" rel="noopener">Hosted pilot for startups →</a>
-  <a class="back" href="/">← Dashboard</a>
   <div id="timer">0:00</div>
-  <button id="run">Run Side-by-Side Comparison</button>
+  <button id="run">▶ Run Side-by-Side Comparison</button>
 </header>
 <div class="steps" id="steps"></div>
 <div class="err" id="err" hidden></div>
 <main>
   <section class="panel left" id="L">
-    <div class="ph"><div><h2>Unprotected AI Agent</h2><div class="sub">Direct access to the database, S3, Stripe and email</div></div></div>
-    <div class="banner" id="Lb">Ready</div>
-    <div class="total" id="Lt"><div><div class="lbl">Total damage</div><div class="big" id="Ltv">$0.00</div></div><div class="note" id="Ltn">Press the button to run the agent</div></div>
-    <div class="grid" id="Lg"></div>
-    <div class="feed" id="Lf"></div>
+    <div class="phead">
+      <div class="ph"><h2>Unprotected AI Agent</h2><div class="sub">Direct access to the database, S3, Stripe and email</div></div>
+      <div class="banner" id="Lb">Ready</div>
+    </div>
+    <div class="read" id="Lr"><div class="feed" id="Lf"></div></div>
+    <div class="pfoot">
+      <div class="total" id="Lt"><div><div class="lbl">Total damage</div><div class="big" id="Ltv">$0.00</div></div><div class="note" id="Ltn">Press the button to run the agent</div></div>
+      <div class="grid" id="Lg"></div>
+    </div>
   </section>
   <section class="panel right" id="R">
-    <div class="ph"><div><h2>Protected by Rollikey</h2><div class="sub">3 lines of code · same agent, same tools</div></div>
-      <div class="code"><i>// the entire integration</i>
-const run = rollikey.run();
-try { await agent(run); }
-catch { await run.revert(); }</div></div>
-    <div class="banner" id="Rb">Ready</div>
-    <div class="total" id="Rt"><div><div class="lbl">Total damage</div><div class="big" id="Rtv">$0.00</div></div><div class="note" id="Rtn">Press the button to run the agent</div></div>
-    <div class="grid" id="Rg"></div>
-    <div class="air" id="Ra"><div class="row"><span id="Ral">Airlock</span><span class="cd" id="Rac">60s</span></div><div class="bar"><i id="Rai"></i></div></div>
-    <div class="verify" id="Rv"><div class="rv" id="Rrv"></div><div id="Rvl"></div></div>
-    <div class="feed" id="Rf"></div>
+    <div class="phead">
+      <div class="ph"><h2>Protected by Rollikey</h2><div class="sub">3 lines of code · same agent, same tools</div></div>
+      <div class="banner" id="Rb">Ready</div>
+    </div>
+    <div class="read" id="Rr">
+      <div class="air" id="Ra"><div class="row"><span id="Ral">Airlock</span><span class="cd" id="Rac">60s</span></div><div class="bar"><i id="Rai"></i></div></div>
+      <div class="feed" id="Rf"></div>
+      <div class="verify" id="Rv"><div class="rv" id="Rrv"></div><div id="Rvl"></div></div>
+    </div>
+    <div class="pfoot">
+      <div class="total" id="Rt"><div><div class="lbl">Total damage</div><div class="big" id="Rtv">$0.00</div></div><div class="note" id="Rtn">Press the button to run the agent</div></div>
+      <div class="grid" id="Rg"></div>
+    </div>
   </section>
 </main>
 <footer style="text-align:center;padding:10px;color:var(--muted);font-size:12px" class="mono">npm install @rollikey/sdk &nbsp;·&nbsp; npx -y @rollikey/mcp &nbsp;·&nbsp; github.com/rollikey/rollikey</footer>
@@ -129,7 +135,10 @@ catch { await run.revert(); }</div></div>
   const $ = (id) => document.getElementById(id);
   const usd = (c) => '$' + (c / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
-  let skew = 0, startedMs = 0, running = false, seen = { left: 0, right: 0 }, runId = null, lastState = null;
+  let skew = 0, running = false, busy = false, seen = { ids: new Set() }, runId = null, lastState = null;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const scrollDown = (box) => box.scrollTo({ top: box.scrollHeight, behavior: reduceMotion ? 'auto' : 'smooth' });
+  const serverNow = (s) => (s.paused && s.pausedAt ? new Date(s.pausedAt).getTime() : Date.now() + skew);
 
   async function api(path, opts = {}) {
     const r = await fetch(path, { ...opts, headers: { 'x-rollikey-ui': '1', 'content-type': 'application/json' } });
@@ -177,14 +186,16 @@ catch { await run.revert(); }</div></div>
   }
 
   function feed(s) {
+    const grew = new Set();
     for (const e of s.events) {
       if (seen.ids.has(e.i)) continue;
       seen.ids.add(e.i);
       const box = $(e.side === 'left' ? 'Lf' : 'Rf');
       const row = el('div', 'ev ' + (e.kind === 'step' ? 'step' : e.kind === 'crash' ? 'crash' : e.level));
       row.append(el('span', 't', (e.ms / 1000).toFixed(1) + 's'), el('span', '', (e.kind === 'blocked' ? '🛑 ' : e.kind === 'snapshot' ? '📸 ' : e.kind === 'airlock' ? '🔒 ' : '') + e.msg));
-      box.append(row); box.scrollTop = box.scrollHeight;
+      box.append(row); grew.add(e.side);
     }
+    for (const side of grew) scrollDown($(side === 'left' ? 'Lr' : 'Rr'));
   }
 
   function airlock(s) {
@@ -192,7 +203,7 @@ catch { await run.revert(); }</div></div>
     box.classList.toggle('show', Boolean(a));
     if (!a) return;
     const total = s.holdSeconds * 1000;
-    const now = Date.now() + skew;
+    const now = serverNow(s);
     const left = Math.max(0, new Date(a.releaseAt).getTime() - now);
     box.className = 'air show ' + a.status;
     if (a.status === 'held') { $('Ral').textContent = '🔒 Airlock · email to ' + 'jordan.whitfield@…' + ' held'; $('Rac').textContent = Math.ceil(left / 1000) + 's'; $('Rai').style.width = (100 * left / total) + '%'; }
@@ -202,8 +213,10 @@ catch { await run.revert(); }</div></div>
 
   function verify(s) {
     const v = s.right.verify, box = $('Rv');
+    const wasShown = box.classList.contains('show');
     box.classList.toggle('show', Boolean(v));
     if (!v) return;
+    if (!wasShown) requestAnimationFrame(() => scrollDown($('Rr')));
     $('Rrv').textContent = `revert(runId) · ${s.right.revertMs} ms`;
     $('Rvl').replaceChildren(...v.map((c) => el('div', c.ok ? '' : 'no', (c.ok ? '✔ ' : '✖ ') + c.label)));
   }
@@ -218,8 +231,9 @@ catch { await run.revert(); }</div></div>
     if (!lastState) return;
     const s = lastState;
     if (s.startedAt) {
-      const end = s.finishedAt ? new Date(s.finishedAt).getTime() : Date.now() + skew;
-      const sec = Math.max(0, Math.floor((end - new Date(s.startedAt).getTime()) / 1000));
+      const end = s.finishedAt ? new Date(s.finishedAt).getTime() : serverNow(s);
+      const pausedMs = s.pausedMs || 0;
+      const sec = Math.max(0, Math.floor((end - new Date(s.startedAt).getTime() - pausedMs) / 1000));
       $('timer').textContent = Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
     }
     airlock(s);
@@ -228,13 +242,24 @@ catch { await run.revert(); }</div></div>
   function render(s) {
     lastState = s;
     skew = new Date(s.now).getTime() - Date.now();
-    if (s.id !== runId) { runId = s.id; seen = { ids: new Set(), left: 0, right: 0 }; $('Lf').replaceChildren(); $('Rf').replaceChildren(); }
+    if (s.id !== runId) { runId = s.id; seen = { ids: new Set() }; $('Lf').replaceChildren(); $('Rf').replaceChildren(); $('timer').textContent = '0:00'; }
     running = s.status === 'running';
-    $('run').disabled = running;
-    $('run').textContent = running ? 'Running…' : s.status === 'done' ? 'Run it again' : 'Run Side-by-Side Comparison';
+    button(s);
     $('err').hidden = !s.error; $('err').textContent = s.error ? 'Demo error: ' + s.error : '';
     steps(s); banner(s); cells('left', s.left.metrics, s.left.phase); cells('right', s.right.metrics, s.right.phase);
     total('left', s); total('right', s); feed(s); verify(s); tick();
+  }
+
+  function mode(s) {
+    if (s.status === 'running') return s.paused ? 'paused' : 'running';
+    return s.status === 'idle' ? 'idle' : 'finished';
+  }
+
+  function button(s) {
+    const b = $('run'), m = mode(s);
+    b.disabled = busy;
+    b.className = m === 'running' ? 'pause' : m === 'paused' ? 'play' : '';
+    b.textContent = m === 'running' ? '⏸ Pause' : m === 'paused' ? '▶ Play' : m === 'finished' ? '↻ Run Again' : '▶ Run Side-by-Side Comparison';
   }
 
   async function poll() {
@@ -244,11 +269,21 @@ catch { await run.revert(); }</div></div>
   setInterval(tick, 250);
 
   $('run').addEventListener('click', async () => {
-    $('run').disabled = true;
-    try { await api('/api/demo/run', { method: 'POST', body: '{}' }); } catch (e) { $('err').hidden = false; $('err').textContent = e.message; }
-    running = true;
+    if (busy) return;
+    const m = lastState ? mode(lastState) : 'idle';
+    busy = true; $('run').disabled = true;
+    try {
+      if (m === 'running') render(await api('/api/demo/pause', { method: 'POST', body: '{}' }));
+      else if (m === 'paused') render(await api('/api/demo/resume', { method: 'POST', body: '{}' }));
+      else {
+        await api('/api/demo/run', { method: 'POST', body: '{}' });
+        running = true;
+        render(await api('/api/demo'));
+      }
+    } catch (e) { $('err').hidden = false; $('err').textContent = e.message; }
+    busy = false;
+    if (lastState) button(lastState);
   });
-  seen = { ids: new Set(), left: 0, right: 0 };
   poll();
 })();
 </script>
