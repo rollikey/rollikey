@@ -1,4 +1,4 @@
-https://github.com/user-attachments/assets/67ba260c-30a6-42bb-8781-c46cd75b3d3c
+https://github.com/user-attachments/assets/1003f497-8a23-4f76-a6ea-5471f8c4b649
 
 # <img src="assets/rollikey-logo.svg" alt="Rollikey" width="40" height="40" align="absmiddle">&nbsp;Rollikey
 
