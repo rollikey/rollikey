@@ -2,6 +2,8 @@
 
 [![npm: @rollikey/sdk](https://img.shields.io/npm/v/@rollikey/sdk?label=%40rollikey%2Fsdk)](https://www.npmjs.com/package/@rollikey/sdk) [![npm: @rollikey/mcp](https://img.shields.io/npm/v/@rollikey/mcp?label=%40rollikey%2Fmcp)](https://www.npmjs.com/package/@rollikey/mcp) [![Hosted Pilot](https://img.shields.io/static/v1?label=hosted%20pilot&message=apply%20%E2%86%92&color=10B981)](https://tally.so/r/J1l5dY)
 
+https://github.com/user-attachments/assets/67ba260c-30a6-42bb-8781-c46cd75b3d3c
+
 Deterministic rollback and blast-radius proxy for AI agents across PostgreSQL, Stripe, AWS S3, GitHub, and Slack/Email:
 
 - **Pre-flight snapshots & blast-radius gates.** Intercepts DB, Stripe, S3, and GitHub writes—saving Before-State snapshots and blocking >10-item mutations, >$1,000 charges/refunds, public S3 ACLs, or protected branches.
